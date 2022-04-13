@@ -8,7 +8,7 @@ class TeekoPlayer:
     pieces = ['b', 'r']
     move_positions = []
     moves_made = 0
-    MAX_DEPTH = 3
+    MAX_DEPTH = 2
 
     def __init__(self):
         """ Initializes a TeekoPlayer object by randomly selecting red or black as its
