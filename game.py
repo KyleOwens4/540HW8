@@ -8,7 +8,7 @@ class TeekoPlayer:
     pieces = ['b', 'r']
     move_positions = []
     moves_made = 0
-    MAX_DEPTH = 100
+    MAX_DEPTH = 3
 
     def __init__(self):
         """ Initializes a TeekoPlayer object by randomly selecting red or black as its
@@ -46,12 +46,12 @@ class TeekoPlayer:
         # If we're in drop phase, make sure we return a move from position
         drop_phase = (self.moves_made < 8)
         if not drop_phase:
-            succ = self.succ(self.board, False, self.my_piece)
-            print(self.heuristic_game_value(succ[1]))
+            max_val, max_succ = self.max_value(self.board, 0)
             return self.pick_valid_move()
 
         # select an unoccupied space randomly
         # TODO: implement a minimax algorithm to play better
+        max_val, max_succ = self.max_value(self.board, 0)
         move = []
         (row, col) = (random.randint(0,4), random.randint(0,4))
         while not state[row][col] == ' ':
@@ -63,16 +63,41 @@ class TeekoPlayer:
         self.moves_made += 1
         return move
 
-    def max_value(self, state, depth, move_color):
-        value = self.heuristic_game_value(state)
-        next_move = 'r' if move_color == 'b' else 'b'
+    def max_value(self, state, depth):
+        value = self.heuristic_game_value(state) * -1
 
         if depth == self.MAX_DEPTH or value == 1 or value == -1:
-            return value
+            return value, state
 
         max_val = -10
-        for succ in self.succ(state, (self.moves_made + depth) > 8, move_color):
-            max(max_val, max_value(state, depth + 1, ))
+        max_succ = []
+
+        for succ in self.succ(state, (self.moves_made + depth) < 8, self.my_piece):
+            new_val, new_succ = self.min_value(succ, depth + 1)
+            if new_val > max_val:
+                max_succ = succ
+                max_val = new_val
+
+        return max_val, max_succ
+
+    def min_value(self, state, depth):
+        value = self.heuristic_game_value(state)
+        move_color = 'b' if self.my_piece == 'r' else 'r'
+
+        if depth == self.MAX_DEPTH or value == 1 or value == -1:
+            return value, state
+
+        min_val = 10
+        min_succ = []
+
+        for succ in self.succ(state, (self.moves_made + depth) < 8, move_color):
+            new_val, new_succ = self.max_value(succ, depth + 1)
+
+            if new_val < min_val:
+                min_succ = succ
+                min_val = new_val
+
+        return min_val, min_succ
 
     def pick_valid_move(self):
         moves = []
