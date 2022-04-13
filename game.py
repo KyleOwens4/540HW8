@@ -47,24 +47,31 @@ class TeekoPlayer:
         drop_phase = (self.moves_made < 8)
         if not drop_phase:
             max_val, max_succ = self.max_value(self.board, 0)
-            return self.pick_valid_move()
+            test_move = max_succ[1]
+            self.move_positions.append(test_move)
+            self.moves_made += 1
+            return test_move
+            # return self.pick_valid_move()
 
         # select an unoccupied space randomly
         # TODO: implement a minimax algorithm to play better
         max_val, max_succ = self.max_value(self.board, 0)
-        move = []
-        (row, col) = (random.randint(0,4), random.randint(0,4))
-        while not state[row][col] == ' ':
-            (row, col) = (random.randint(0,4), random.randint(0,4))
-
-        # ensure the destination (row,col) tuple is at the beginning of the move list
-        move.insert(0, (row, col))
-        self.move_positions.append((row, col))
+        test_move = max_succ[1]
+        self.move_positions.append(test_move)
         self.moves_made += 1
-        return move
+        return test_move
+        # move = []
+        # (row, col) = (random.randint(0,4), random.randint(0,4))
+        # while not state[row][col] == ' ':
+        #     (row, col) = (random.randint(0,4), random.randint(0,4))
+
+        # # ensure the destination (row,col) tuple is at the beginning of the move list
+        # move.insert(0, (row, col))
+
+        # return move
 
     def max_value(self, state, depth):
-        value = self.heuristic_game_value(state) * -1
+        value = self.heuristic_game_value(state)
 
         if depth == self.MAX_DEPTH or value == 1 or value == -1:
             return value, state
@@ -73,7 +80,7 @@ class TeekoPlayer:
         max_succ = []
 
         for succ in self.succ(state, (self.moves_made + depth) < 8, self.my_piece):
-            new_val, new_succ = self.min_value(succ, depth + 1)
+            new_val, new_succ = self.min_value(succ[0], depth + 1)
             if new_val > max_val:
                 max_succ = succ
                 max_val = new_val
@@ -91,7 +98,7 @@ class TeekoPlayer:
         min_succ = []
 
         for succ in self.succ(state, (self.moves_made + depth) < 8, move_color):
-            new_val, new_succ = self.max_value(succ, depth + 1)
+            new_val, new_succ = self.max_value(succ[0], depth + 1)
 
             if new_val < min_val:
                 min_succ = succ
@@ -155,7 +162,7 @@ class TeekoPlayer:
                     if state[row][col] == ' ':
                         state_copy = copy.deepcopy(state)
                         state_copy[row][col] = move_color
-                        succ_states.append(state_copy)
+                        succ_states.append((state_copy, [(row, col)]))
         else:
             for row in range(5):
                 for col in range(5):
@@ -171,56 +178,56 @@ class TeekoPlayer:
             state_copy = copy.deepcopy(state)
             state_copy[row - 1][col] = state[row][col]
             state_copy[row][col] = ' '
-            succ_states.append(state_copy)
+            succ_states.append((state_copy, [(row - 1, col), (row, col)]))
 
         # If there is room to the right of the selected position, add to the potential moves
         if row < 4 and state[row + 1][col] == ' ':
             state_copy = copy.deepcopy(state)
             state_copy[row + 1][col] = state[row][col]
             state_copy[row][col] = ' '
-            succ_states.append(state_copy)
+            succ_states.append((state_copy, [(row + 1, col), (row, col)]))
 
         # If there is room above the selected position, add to the potential moves
         if col > 0 and state[row][col - 1] == ' ':
             state_copy = copy.deepcopy(state)
             state_copy[row][col - 1] = state[row][col]
             state_copy[row][col] = ' '
-            succ_states.append(state_copy)
+            succ_states.append((state_copy, [(row, col - 1), (row, col)]))
 
         # If there is room below the selected position, add to the potential moves
         if col < 4 and state[row][col + 1] == ' ':
             state_copy = copy.deepcopy(state)
             state_copy[row][col + 1] = state[row][col]
             state_copy[row][col] = ' '
-            succ_states.append(state_copy)
+            succ_states.append((state_copy, [(row, col + 1), (row, col)]))
 
         # If there is room up-left of the selected position, add to the potential moves
         if row > 0 and col > 0 and state[row - 1][col - 1] == ' ':
             state_copy = copy.deepcopy(state)
             state_copy[row - 1][col - 1] = state[row][col]
             state_copy[row][col] = ' '
-            succ_states.append(state_copy)
+            succ_states.append((state_copy, [(row - 1, col - 1), (row, col)]))
 
         # If there is room up-right of the selected position, add to the potential moves
         if row < 4 and col > 0 and state[row + 1][col - 1] == ' ':
             state_copy = copy.deepcopy(state)
             state_copy[row + 1][col - 1] = state[row][col]
             state_copy[row][col] = ' '
-            succ_states.append(state_copy)
+            succ_states.append((state_copy, [(row + 1, col - 1), (row, col)]))
 
         # If there is room down-left of the selected position, add to the potential moves
         if row > 0 and col < 4 and state[row - 1][col + 1] == ' ':
             state_copy = copy.deepcopy(state)
             state_copy[row - 1][col + 1] = state[row][col]
             state_copy[row][col] = ' '
-            succ_states.append(state_copy)
+            succ_states.append((state_copy, [(row - 1, col + 1), (row, col)]))
 
         # If there is room down-right the selected position, add to the potential moves
         if row < 4 and col < 4 and state[row + 1][col + 1] == ' ':
             state_copy = copy.deepcopy(state)
             state_copy[row + 1][col + 1] = state[row][col]
             state_copy[row][col] = ' '
-            succ_states.append(state_copy)
+            succ_states.append((state_copy, [(row + 1, col + 1), (row, col)]))
 
         return succ_states
 
@@ -230,49 +237,58 @@ class TeekoPlayer:
         if value == 0:
             for row in range(5):
                 for col in range(5):
-                    if state[row][col] == self.my_piece:
+                    if state[row][col] != ' ':
                         if row != 0 and row != 4 and col != 0 and col != 4:
-                            value += .025
+                            if state[row][col] == self.my_piece:
+                                value += .025
+                            else:
+                                value -= .025
 
                         if row == 2 and col == 2:
-                            value += .025
+                            if state[row][col] == self.my_piece:
+                                value += .025
+                            else:
+                                value -= .025
 
-                        value += self.get_chain_value(state, row, col)
+                        if state[row][col] == self.my_piece:
+                            value += self.get_chain_value(state, row, col, state[row][col])
+                        else:
+                            value -= self.get_chain_value(state, row, col, state[row][col])
 
         return value
 
-    def get_chain_value(self, state, row, col):
+    def get_chain_value(self, state, row, col, piece_color):
         chain = 1
         # Up
-        if row > 1 and state[row - 1][col] == self.my_piece:
+        if row > 1 and state[row - 1][col] == piece_color:
             chain += 1
 
         # Down
-        if row < 4 and state[row + 1][col] == self.my_piece:
+        if row < 4 and state[row + 1][col] == piece_color:
             chain += 1
 
         # Left
-        if col > 1 and state[row][col - 1] == self.my_piece:
+        if col > 1 and state[row][col - 1] == piece_color:
             chain += 1
 
         # Right
-        if col < 4 and state[row][col + 1] == self.my_piece:
+        if col < 4 and state[row][col + 1] == piece_color:
             chain += 1
 
         # Up Left
-        if row > 1 and col > 1 and state[row - 1][col - 1] == self.my_piece:
+        if row > 1 and col > 1 and state[row - 1][col - 1] == piece_color:
             chain += 1
 
         # Up Right
-        if row > 1 and col < 4 and state[row - 1][col + 1] == self.my_piece:
+        if row > 1 and col < 4 and state[row - 1][col + 1] == piece_color:
             chain += 1
 
         # Down Left
-        if row < 4 and col > 1 and state[row + 1][col - 1] == self.my_piece:
+        if row < 4 and col > 1 and state[row + 1][col - 1] == piece_color:
             chain += 1
 
         # Down Right
-        if row < 4 and col < 4 and state[row + 1][col + 1] == self.my_piece:
+        if row < 4 and col < 4 and state[row + 1][col + 1] == piece_color:
             chain += 1
 
         return chain/100
