@@ -1,5 +1,6 @@
 import random
 import copy
+import timeit
 
 class TeekoPlayer:
     """ An object representation for an AI game player for the game Teeko.
@@ -8,7 +9,7 @@ class TeekoPlayer:
     pieces = ['b', 'r']
     move_positions = []
     moves_made = 0
-    MAX_DEPTH = 2
+    MAX_DEPTH = 3
 
     def __init__(self):
         """ Initializes a TeekoPlayer object by randomly selecting red or black as its
@@ -46,29 +47,22 @@ class TeekoPlayer:
         # If we're in drop phase, make sure we return a move from position
         drop_phase = (self.moves_made < 8)
         if not drop_phase:
+            time = timeit.default_timer()
             max_val, max_succ = self.max_value(self.board, 0)
+            print(timeit.default_timer() - time)
             test_move = max_succ[1]
             self.move_positions.append(test_move)
             self.moves_made += 1
             return test_move
-            # return self.pick_valid_move()
 
-        # select an unoccupied space randomly
-        # TODO: implement a minimax algorithm to play better
+        time = timeit.default_timer()
         max_val, max_succ = self.max_value(self.board, 0)
+        print(timeit.default_timer() - time)
         test_move = max_succ[1]
         self.move_positions.append(test_move)
         self.moves_made += 1
         return test_move
-        # move = []
-        # (row, col) = (random.randint(0,4), random.randint(0,4))
-        # while not state[row][col] == ' ':
-        #     (row, col) = (random.randint(0,4), random.randint(0,4))
 
-        # # ensure the destination (row,col) tuple is at the beginning of the move list
-        # move.insert(0, (row, col))
-
-        # return move
 
     def max_value(self, state, depth):
         value = self.heuristic_game_value(state)
@@ -105,53 +99,6 @@ class TeekoPlayer:
                 min_val = new_val
 
         return min_val, min_succ
-
-    def pick_valid_move(self):
-        moves = []
-        move_pos = random.randint(0, len(self.move_positions) - 1)
-        move = self.move_positions[move_pos]
-
-        while len(moves) == 0:
-            move_pos = random.randint(0, len(self.move_positions) - 1)
-            move = self.move_positions[move_pos]
-
-            # If there is room to the left of the selected position, add to the potential moves
-            if move[0] > 0 and self.board[move[0] - 1][move[1]] == ' ':
-                moves.append((move[0] - 1, move[1]))
-
-            # If there is room to the right of the selected position, add to the potential moves
-            if move[0] < 4 and self.board[move[0] + 1][move[1]] == ' ':
-                moves.append((move[0] + 1, move[1]))
-
-            # If there is room above the selected position, add to the potential moves
-            if move[1] > 0 and self.board[move[0]][move[1] - 1] == ' ':
-                moves.append((move[0], move[1] - 1))
-
-            # If there is room below the selected position, add to the potential moves
-            if move[1] < 4 and self.board[move[0]][move[1] + 1] == ' ':
-                moves.append((move[0], move[1] + 1))
-
-            # If there is room up-left of the selected position, add to the potential moves
-            if move[0] > 0 and move[1] > 0 and self.board[move[0] - 1][move[1] - 1] == ' ':
-                moves.append((move[0]-1, move[1]-1))
-
-            # If there is room up-right of the selected position, add to the potential moves
-            if move[0] < 4 and move[1] > 0 and self.board[move[0] + 1][move[1] - 1] == ' ':
-                moves.append((move[0] + 1, move[1] - 1))
-
-            # If there is room down-left of the selected position, add to the potential moves
-            if move[0] > 0 and move[1] < 4 and self.board[move[0] - 1][move[1] + 1] == ' ':
-                moves.append((move[0] - 1, move[1] + 1))
-
-            # If there is room down-right the selected position, add to the potential moves
-            if move[0] < 4 and move[1] < 4 and self.board[move[0] + 1][move[1] + 1] == ' ':
-                moves.append((move[0] + 1, move[1] + 1))
-
-        del self.move_positions[move_pos]
-
-        selected_pos = random.randint(0, len(moves) - 1)
-        self.move_positions.append(moves[selected_pos])
-        return [moves[selected_pos], move]
 
     def succ(self, state, is_drop_phase, move_color):
         succ_states = []
