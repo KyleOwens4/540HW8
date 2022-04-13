@@ -8,6 +8,7 @@ class TeekoPlayer:
     pieces = ['b', 'r']
     move_positions = []
     moves_made = 0
+    MAX_DEPTH = 100
 
     def __init__(self):
         """ Initializes a TeekoPlayer object by randomly selecting red or black as its
@@ -61,6 +62,17 @@ class TeekoPlayer:
         self.move_positions.append((row, col))
         self.moves_made += 1
         return move
+
+    def max_value(self, state, depth, move_color):
+        value = self.heuristic_game_value(state)
+        next_move = 'r' if move_color == 'b' else 'b'
+
+        if depth == self.MAX_DEPTH or value == 1 or value == -1:
+            return value
+
+        max_val = -10
+        for succ in self.succ(state, (self.moves_made + depth) > 8, move_color):
+            max(max_val, max_value(state, depth + 1, ))
 
     def pick_valid_move(self):
         moves = []
@@ -239,53 +251,6 @@ class TeekoPlayer:
             chain += 1
 
         return chain/100
-
-        # # Row chains
-        # for row in state:
-        #     for i in range(2):
-        #         if row[i] == self.my_piece:
-        #             if row[i] == row[i + 1]:
-        #                 chain = 2
-        #                 if row[i] == row[i + 2]:
-        #                     return 3
-        #
-        # # Column chains
-        # for col in range(5):
-        #     for i in range(2):
-        #         if state[i][col] == self.my_piece:
-        #             if state[i][col] == state[i + 1][col]:
-        #                 chain = 2
-        #                 if state[i][col] == state[i + 2][col]:
-        #                     return 3
-        #
-        # # \ diagonal chains
-        # for col in range(2):
-        #     for row in range(2):
-        #         if state[row][col] == self.my_piece:
-        #             if state[row][col] == state[row + 1][col + 1]:
-        #                 chain = 2
-        #                 if state[row][col] == state[row + 2][col + 2]:
-        #                     return 3
-        #
-        # # / diagonal chains
-        # for col in range(2):
-        #     for row in range(3, 5):
-        #         if state[row][col] == self.my_piece:
-        #             if state[row][col] == state[row - 1][col + 1]:
-        #                 chain = 2
-        #                 if state[row][col] == state[row - 2][col + 2]:
-        #                     return 3
-        #
-        # # box chains
-        # for col in range(4):
-        #     for row in range(4):
-        #         if state[row][col] == self.my_piece:
-        #             if state[row][col] == state[row][col + 1]:
-        #                 chain = 2
-        #                 if state[row][col] == state[row + 1][col]:
-        #                     return 3
-        #
-        # return chain
 
     def opponent_move(self, move):
         """ Validates the opponent's next move against the internal board representation.
